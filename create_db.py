@@ -1,52 +1,55 @@
 from psycopg2 import connect, OperationalError
-from psycopg2.errors import DuplicateDatabase, DuplicateTabl
-CREATE_DB = "CREATE DATABASE confi_db;"
-CREATE_USER_TABLE = """CREATE TABLE users(
-    id serial PRIMARY KEY,
-    username VARCHAR(255) UNIQUE,
+from psycopg2.errors import DuplicateDatabase, DuplicateTable
+
+
+CREATE_DB = "CREATE DATABASE workshop;"
+
+CREATE_USERS_TABLE = """CREATE TABLE users(
+    id serial PRIMARY KEY, 
+    username varchar(255) UNIQUE,
     hashed_password varchar(80))"""
 
-CERATE_MASSANGES_TABLE = """CREATE TABLE massages(
-    id serial PRIMARY KEY,
+CREATE_MESSAGES_TABLE = """CREATE TABLE messages(
+    id SERIAL, 
     from_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    to_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    creation_data timestamp default current_timestamp)"""
+    to_id INTEGER REFERENCES users(id) ON DELETE CASCADE, 
+    text varchar(255),
+    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"""
 
-USER = "postgres"
-PASSWORD = "coderslab"
-HOST = "127.0.0.1"
+DB_USER = "postgres"
+DB_PASSWORD = "coderslab"
+DB_HOST = "127.0.0.1"
+
 try:
-    cnx = connect(user=USER, password=PASSWORD, host=HOST)
+    cnx = connect(user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
     cnx.autocommit = True
     cursor = cnx.cursor()
     try:
         cursor.execute(CREATE_DB)
-        print("created datebase")
-    except DuplicateDatabase as d:
-        print("exist database", d)
+        print("Database created")
+    except DuplicateDatabase as e:
+        print("Database exists ", e)
     cnx.close()
-except OperationalError as o: print("Error")
+except OperationalError as e:
+    print("Connection Error: ", e)
 
 
 try:
-    cnx = connect(database="confi_db", user=USER, password=PASSWORD, host=HOST)
+    cnx = connect(database="workshop", user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
     cnx.autocommit = True
     cursor = cnx.cursor()
-    try:
-        cursor.execute(CREATE_USER_TABLE)
-        print("Table user")
-    except DuplicateDatabase as d:
-        print("table exists", d)
 
     try:
-        cursor.execute(CERATE_MASSANGES_TABLE)
-        print("Table massage")
-    except DuplicateDatabase as d:
-        print("table exist", d)
+        cursor.execute(CREATE_USERS_TABLE)
+        print("Table users created")
+    except DuplicateTable as e:
+        print("Table exists ", e)
+
+    try:
+        cursor.execute(CREATE_MESSAGES_TABLE)
+        print("Table messages created")
+    except DuplicateTable as e:
+        print("Table exists ", e)
     cnx.close()
-except OperationalError as o:
-    print("Error", o)
-
-
-
-
+except OperationalError as e:
+    print("Connection Error: ", e)
